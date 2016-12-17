@@ -31,7 +31,7 @@ function createDir(dir) {
                     resolve(dir)
                 }); 
             } else {
-                reject(dir)
+                reject(`Directory ${dir} already exists`)
             } 
         })
 }
@@ -63,44 +63,80 @@ function createReactAction(projectDir, actionName) {
     }) 
 }
 
-function createReactReducer(reducerName, projectDir, actionConvName, compName) {
+function createReactReducer(reducerName, projectDir, actionConvName, compConvName) {
     return new Promise(
         function (resolve, reject) {
         const reducerDir = path.join(projectDir, '/src/reducers')
         const reducerFile = 'reducer.js'
-        // Change action file
-       data = fs.readFileSync(path.join(reducerDir,'reducer.js'), 'utf-8')
+        const rootReducerFile = 'index.js'
+       
+        // Change reducer file
+        data = fs.readFileSync(path.join(reducerDir, reducerFile), 'utf-8')
             
-            var newReducer = data.replace(/ACTION/gm, actionConvName.ACTION).
-                            replace(/Action/gm, actionConvName.action). 
-                            //replace from '../actions/Action' to  from '../actions/action'
-                            replace(/mComponent/gm, compName);
+        var newReducer = data.replace(/ACTION/gm, actionConvName.ACTION).
+                        replace(/Action/gm, actionConvName.action). 
+                        replace(/mComponent/gm, compConvName.compName);
 
-            fs.writeFileSync(path.join(reducerDir, reducerFile), newReducer, 'utf-8')
-            fs.renameSync(path.join(reducerDir, reducerFile), 
-                    path.join(reducerDir, reducerName.toLowerCase() + '.js'))
+        fs.writeFileSync(path.join(reducerDir, reducerFile), newReducer, 'utf-8')
+        fs.renameSync(path.join(reducerDir, reducerFile), 
+                path.join(reducerDir, reducerName.toLowerCase() + '.js'))
+       
 
-        });
-            
-  //  });
+        data = fs.readFileSync(path.join(reducerDir, rootReducerFile), 'utf-8')
+        console.log(data)
+        var newReducer = data.replace(/reducer/gm, reducerName.toLowerCase())
+                             .replace(/Mcomponent/gm, compConvName.CompName)
+                             .replace(/mComponent/gm, compConvName.compName)
+        fs.writeFileSync(path.join(reducerDir, rootReducerFile), newReducer, 'utf-8')
+    })
 }
- 
-  var dir
-  var actionConvName
-  var question
- function scenario(count) {
+
+function createReactComponent(compName, projectDir, actionConvName) {
+    return new Promise(
+        function (resolve, reject) {
+        const compDir = path.join(projectDir, '/src/components')
+        const compFile = 'Mcomponent.js'
+        const compConvName = {
+                compName : compName,
+                CompName : compName.replace(compName[0], compName[0].toUpperCase()),
+            }
+
+        // Change component file
+        data = fs.readFileSync(path.join(compDir ,compFile), 'utf-8')
+        
+        var newComp = data.replace(/Mcomponent/gm, compConvName.CompName)
+                        .replace(/mComponent/gm, compConvName.compName)
+                        .replace(/Action/gm, actionConvName.Action);
+
+        fs.writeFileSync(path.join(compDir, compFile), newComp, 'utf-8')
+        fs.renameSync(path.join(compDir, compFile), 
+                path.join(compDir, compConvName.CompName + '.js'))
+        resolve(compConvName)
+     })
+}
+
+var dir
+var actionConvName
+var question
+var compConvName
+
+function scenario(count) {
     switch (count) {
+
         case 1:
             question = 'Name of project: '
-            break;
-       case 2:
+            break
+        case 2:
             question = 'Name of action: '
-            break;
-       case 3:
+            break
+        case 3:
+            question = 'Name of component: '
+            break
+        case 4:
             question = 'Name of reducer: '
-            break;
-       default:
-        return
+            break
+        default:
+            return
     }
     
     process.stdin.resume()
@@ -109,14 +145,14 @@ function createReactReducer(reducerName, projectDir, actionConvName, compName) {
 
      if (answer.length === 0) scenario(count) 
      process.stdin.pause()
-     console.log(count)
+              console.log(count)
+
      switch (count) {
          case 1:
-           // process.stdin.pause()
             createDir(answer).then(data => { count++; 
                                              dir = data  
                                              scenario(count)} )
-                             .catch(error => { scenario(count)})
+                             .catch(error => { console.log(error); scenario(count)})
             break;
         case 2:
             createReactAction(dir ,answer)
@@ -124,15 +160,19 @@ function createReactReducer(reducerName, projectDir, actionConvName, compName) {
                             .catch(error => { scenario(count) })
             break;
         case 3:
-            createReactReducer(answer, dir, actionConvName, 'Itzko')
+            createReactComponent(answer, dir, actionConvName)
+                            .then(data => { compConvName = data; count++; scenario(count) } )
+                            .catch(error => { console.log(error) })
+            break;
+    
+        case 4:
+            createReactReducer(answer, dir, actionConvName, compConvName)
                             .then(data => { count++; scenario(count) } )
                             .catch(error => { console.log(error) })
             break;
-            //break; 
         default:
            return  
      }
-     //scenario(count)
      });
  }
  scenario(1)
