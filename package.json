@@ -1,7 +1,7 @@
 {
   "name": "generator",
   "version": "1.0.0",
-  "description": "GLLU React App",
+  "description": "Generator starter kit for React Redux",
   "main": "index.js",
   "dependencies": {
     "ncp": "^2.0.0",

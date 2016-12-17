@@ -26,7 +26,7 @@ function setUpNPM(dir) {
           cp.spawnSync('gnome-terminal', ['-x', 'sh', '-c' ,'npm start; bash'], {cwd: dir, stdio: 'inherit'}) 
           cp.spawnSync('google-chrome', ['--app', 'http://localhost:8080'], {cwd: dir, stdio: 'inherit'}) 
           //cp.spawnSync('npm', ['start'], {cwd: dir, stdio: 'inherit'}) 
-          console.log(`Open a new session and run: cd ${dir} && npm run server`) 
+         // console.log(`Open a new session and run: cd ${dir} && npm run server`) 
 }
 
 function createDir(dir) {
