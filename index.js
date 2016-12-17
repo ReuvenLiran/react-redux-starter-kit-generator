@@ -69,7 +69,9 @@ function createReactReducer(reducerName, projectDir, actionConvName, compConvNam
         const reducerDir = path.join(projectDir, '/src/reducers')
         const reducerFile = 'reducer.js'
         const rootReducerFile = 'index.js'
-       
+        
+        reducerName[0] = reducerName[0].toLowerCase()
+
         // Change reducer file
         data = fs.readFileSync(path.join(reducerDir, reducerFile), 'utf-8')
             
@@ -79,15 +81,15 @@ function createReactReducer(reducerName, projectDir, actionConvName, compConvNam
 
         fs.writeFileSync(path.join(reducerDir, reducerFile), newReducer, 'utf-8')
         fs.renameSync(path.join(reducerDir, reducerFile), 
-                path.join(reducerDir, reducerName.toLowerCase() + '.js'))
+                path.join(reducerDir, reducerName + '.js'))
        
 
         data = fs.readFileSync(path.join(reducerDir, rootReducerFile), 'utf-8')
-        console.log(data)
-        var newReducer = data.replace(/reducer/gm, reducerName.toLowerCase())
+        var newReducer = data.replace(/reducer/gm, reducerName)
                              .replace(/Mcomponent/gm, compConvName.CompName)
-                             .replace(/mComponent/gm, compConvName.compName)
+
         fs.writeFileSync(path.join(reducerDir, rootReducerFile), newReducer, 'utf-8')
+        resolve(reducerName)
     })
 }
 
@@ -115,10 +117,40 @@ function createReactComponent(compName, projectDir, actionConvName) {
      })
 }
 
+function createReactContainer(projectDir, compConvName, actionConvName, reducerName) {
+    return new Promise(
+        function (resolve, reject) {
+        const contDir = path.join(projectDir, '/src/containers')
+        const contFile = 'McomponentContainer.js'
+        /*
+        const compConvName = {
+                compName : compName,
+                CompName : compName.replace(compName[0], compName[0].toUpperCase()),
+            }*/
+
+        // Change container file
+        data = fs.readFileSync(path.join(contDir ,contFile), 'utf-8')
+        
+        var newCont = data.replace(/Mcomponent/gm, compConvName.CompName)
+                        //.replace(/mComponent/gm, compConvName.compName)
+                        .replace(/reducer/gm, reducerName)
+                        .replace(/actions\/Action/gm, 'actions' + '/' + actionConvName.action)
+                        .replace(/Action/gm, actionConvName.Action);
+
+
+        fs.writeFileSync(path.join(contDir, contFile), newCont, 'utf-8')
+        fs.renameSync(path.join(contDir, contFile), 
+                      path.join(contDir, compConvName.CompName + 'Container.js'))
+        resolve('Container was created')
+     })
+}
+
+
 var dir
 var actionConvName
 var question
 var compConvName
+var reducerName
 
 function scenario(count) {
     switch (count) {
@@ -167,7 +199,12 @@ function scenario(count) {
     
         case 4:
             createReactReducer(answer, dir, actionConvName, compConvName)
-                            .then(data => { count++; scenario(count) } )
+                            .then(data => { 
+                                 reducerName = data
+                                 createReactContainer(dir, compConvName, actionConvName, data)
+                                 .then(data => { count++; scenario(count); console.log(data)})
+                                 .catch(error => console.log(error))
+                            })
                             .catch(error => { console.log(error) })
             break;
         default:
