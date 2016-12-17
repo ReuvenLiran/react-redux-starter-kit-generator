@@ -2,8 +2,8 @@
 React Redux starter kit generator
 
 
-Run npm install && npm start and follow the instructions :)
-index.js contains sme scripts in setUpNPM function, you should change them.
+Run npm install && npm start and follow the instructions :)  
+index.js contains some scripts in setUpNPM function, you should change them.  
 I have tested it on Linux 64bit.
 
 ```
