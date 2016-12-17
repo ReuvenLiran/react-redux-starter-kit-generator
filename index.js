@@ -145,6 +145,21 @@ function createReactContainer(projectDir, compConvName, actionConvName, reducerN
      })
 }
 
+function createReactAppComp(projectDir, compConvName) {
+    return new Promise(
+        function (resolve, reject) {
+        const comptDir = path.join(projectDir, '/src/components')
+        const appCompFile = 'App.js'
+       
+        // Change app component file
+        data = fs.readFileSync(path.join(comptDir ,appCompFile), 'utf-8')
+        
+        var newApp = data.replace(/Mcomponent/gm, compConvName.CompName)      
+
+        fs.writeFileSync(path.join(comptDir, appCompFile), newApp, 'utf-8')
+        resolve('App component was created')
+     })
+}
 
 var dir
 var actionConvName
@@ -176,10 +191,10 @@ function scenario(count) {
     rl.question(question, (answer) => {
 
      if (answer.length === 0) scenario(count) 
+   
      process.stdin.pause()
-              console.log(count)
-
-     switch (count) {
+   
+    switch (count) {
          case 1:
             createDir(answer).then(data => { count++; 
                                              dir = data  
@@ -201,9 +216,12 @@ function scenario(count) {
             createReactReducer(answer, dir, actionConvName, compConvName)
                             .then(data => { 
                                  reducerName = data
-                                 createReactContainer(dir, compConvName, actionConvName, data)
-                                 .then(data => { count++; scenario(count); console.log(data)})
-                                 .catch(error => console.log(error))
+                                 Promise.all(
+                                     [createReactContainer(dir, compConvName, actionConvName, data)
+                                     ,createReactAppComp(dir, compConvName)])          
+                                 .then(data => { count++; scenario(count); console.log(data[0]);    
+                                                 console.log(data[1])})
+                                 .catch(error => { console.log(error[0]) ; console.log(error[1])})
                             })
                             .catch(error => { console.log(error) })
             break;
