@@ -15,3 +15,4 @@ function setUpNPM(dir) {
           //cp.spawnSync('npm', ['start'], {cwd: dir, stdio: 'inherit'}) 
           console.log(`Open a new session and run: cd ${dir} && npm run server`) 
 }
+ 
