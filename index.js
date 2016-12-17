@@ -2,10 +2,15 @@ const readline = require('readline');
 const fs = require('fs');
 var ncp = require('ncp').ncp;
 const starterKit = './starter-kit';
-//var exec  = require('child_process').execFile;
 var path = require('path')
-var spawn = require('child_process').spawn;
- 
+var colors = require('colors')
+var cp = require('child_process');
+var text = 'Hello, \nThis React Redux Nodejs Mongodb Generator.'
+text = text + '\nI suggest to open http://mlab.com'
+text = text + '\nPress Ctrl + C to exit any time'
+text = text + colors.underline('\nNotice: Mongodb is not mandatory')
+
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -13,8 +18,16 @@ const rl = readline.createInterface({
 
 var dirNotExist = true;
 var projectDir;
-var gen
 
+function setUpNPM(dir) {
+          cp.spawnSync('npm', ['init'], {cwd: dir, stdio: 'inherit'})
+          cp.spawnSync('npm', ['install'], {cwd: dir, stdio: 'inherit'}) 
+          cp.spawnSync('gnome-terminal', ['-x', 'sh', '-c' ,'npm run server; bash'], {cwd: dir, stdio: 'inherit'}) 
+          cp.spawnSync('gnome-terminal', ['-x', 'sh', '-c' ,'npm start; bash'], {cwd: dir, stdio: 'inherit'}) 
+          cp.spawnSync('google-chrome', ['--app', 'http://localhost:8080'], {cwd: dir, stdio: 'inherit'}) 
+          //cp.spawnSync('npm', ['start'], {cwd: dir, stdio: 'inherit'}) 
+          console.log(`Open a new session and run: cd ${dir} && npm run server`) 
+}
 
 function createDir(dir) {
     return new Promise(
@@ -43,19 +56,22 @@ function createReactAction(projectDir, actionName) {
         const actionDir = path.join(projectDir, '/src/actions')
         const actionFile = 'Action.js'
         const actionConvName = {
-            Action : actionName.replace(actionName[0], actionName[0].toUpperCase()),
-            ACTION : actionName.toUpperCase(),
-            action : actionName.toLowerCase()
+            actionName : actionName,
+            ActionName : actionName.replace(actionName[0], actionName[0].toUpperCase()),
+            ACTIONNAME : actionName.toUpperCase(),
+            actionname : actionName.toLowerCase()
         }
 
         // Change action file
         var data = fs.readFileSync(path.join(actionDir, actionFile), 'utf-8')
-        var newAction = data.replace(/ACTION/gm, actionConvName.ACTION).
-                        replace(/Action/gm, actionConvName.Action).
-                        replace(/action/gm, actionConvName.action);
+        var newAction = data.replace(/actions/gm, actionConvName.actionName)
+                        .replace(/ACTION/gm, actionConvName.ACTIONNAME)
+                        .replace(/Action/gm, actionConvName.ActionName)
+                        .replace(/action/gm, actionConvName.actionname)
+                      
 
         fs.writeFileSync(path.join(actionDir, actionFile), newAction, 'utf-8');
-        fs.renameSync(path.join(actionDir, actionFile), path.join(actionDir, actionConvName.action + '.js'))
+        fs.renameSync(path.join(actionDir, actionFile), path.join(actionDir, actionConvName.actionName + '.js'))
         console.log('action complete');
 
         resolve(actionConvName)
@@ -75,8 +91,8 @@ function createReactReducer(reducerName, projectDir, actionConvName, compConvNam
         // Change reducer file
         data = fs.readFileSync(path.join(reducerDir, reducerFile), 'utf-8')
             
-        var newReducer = data.replace(/ACTION/gm, actionConvName.ACTION).
-                        replace(/Action/gm, actionConvName.action). 
+        var newReducer = data.replace(/ACTION/gm, actionConvName.ACTIONNAME).
+                        replace(/Action/gm, actionConvName.actionName). 
                         replace(/mComponent/gm, compConvName.compName);
 
         fs.writeFileSync(path.join(reducerDir, reducerFile), newReducer, 'utf-8')
@@ -108,7 +124,7 @@ function createReactComponent(compName, projectDir, actionConvName) {
         
         var newComp = data.replace(/Mcomponent/gm, compConvName.CompName)
                         .replace(/mComponent/gm, compConvName.compName)
-                        .replace(/Action/gm, actionConvName.Action);
+                        .replace(/Action/gm, actionConvName.ActionName);
 
         fs.writeFileSync(path.join(compDir, compFile), newComp, 'utf-8')
         fs.renameSync(path.join(compDir, compFile), 
@@ -122,20 +138,15 @@ function createReactContainer(projectDir, compConvName, actionConvName, reducerN
         function (resolve, reject) {
         const contDir = path.join(projectDir, '/src/containers')
         const contFile = 'McomponentContainer.js'
-        /*
-        const compConvName = {
-                compName : compName,
-                CompName : compName.replace(compName[0], compName[0].toUpperCase()),
-            }*/
-
+   
         // Change container file
         data = fs.readFileSync(path.join(contDir ,contFile), 'utf-8')
         
         var newCont = data.replace(/Mcomponent/gm, compConvName.CompName)
-                        //.replace(/mComponent/gm, compConvName.compName)
+                        .replace(/mComponent/gm, compConvName.compName)
                         .replace(/reducer/gm, reducerName)
-                        .replace(/actions\/Action/gm, 'actions' + '/' + actionConvName.action)
-                        .replace(/Action/gm, actionConvName.Action);
+                        .replace(/actions\/Action/gm, 'actions' + '/' + actionConvName.actionName)
+                        .replace(/Action/gm, actionConvName.ActionName);
 
 
         fs.writeFileSync(path.join(contDir, contFile), newCont, 'utf-8')
@@ -161,36 +172,85 @@ function createReactAppComp(projectDir, compConvName) {
      })
 }
 
+
+function createServerApp(mongoDBUrl, projectDir, actionConvName) {
+    return new Promise(
+        function (resolve, reject) {
+        const serverDir = projectDir
+        const appFile = 'app.js'
+       
+        // Change server app file
+        data = fs.readFileSync(path.join(serverDir ,appFile), 'utf-8')
+        
+        var newApp = data.replace(/MongoLabUrl/gm, mongoDBUrl) 
+                         .replace(/actions/gm, actionConvName.actionName)     
+
+        fs.writeFileSync(path.join(serverDir, appFile), newApp, 'utf-8')
+        resolve('Server app was created')
+     })
+}
+
+function createServerAction(projectDir, actionConvName) {
+    return new Promise(
+        function (resolve, reject) {
+        
+        const routesDir = path.join(projectDir, '/routes')
+        const actionsFile = 'actions.js'
+       
+        // Change server app file
+        data = fs.readFileSync(path.join(routesDir ,actionsFile), 'utf-8')
+        
+        var newAction = data.replace(/actions/gm, actionConvName.actionName)     
+
+        fs.writeFileSync(path.join(routesDir, actionsFile), newAction, 'utf-8')
+        fs.renameSync(path.join(routesDir, actionsFile), 
+                      path.join(routesDir, actionConvName.actionName + '.js'))
+        resolve('Server app was created')
+     })
+}
+
 var dir
 var actionConvName
 var question
 var compConvName
 var reducerName
+var regex = /^\w+$/;
 
 function scenario(count) {
+    
+    process.stdin.resume()
+
     switch (count) {
 
         case 1:
             question = 'Name of project: '
             break
         case 2:
-            question = 'Name of action: '
+            question = 'Name of action (e.g. todoList): '
             break
         case 3:
-            question = 'Name of component: '
+            question = 'Name of component (e.g. todoList): '
             break
         case 4:
-            question = 'Name of reducer: '
+            question = 'Name of reducer (e.g. todoList): '
             break
+       case 5:
+            question = 'MongoDB URL: '
+            break
+        case 6:
+            setUpNPM(dir)
+            count++
         default:
             return
     }
     
-    process.stdin.resume()
-
     rl.question(question, (answer) => {
 
-     if (answer.length === 0) scenario(count) 
+     if ((answer.length === 0 || !regex.test(answer)) 
+        && count !== 5) {
+       console.log('Please use React convention name') 
+       return scenario(count) 
+     }
    
      process.stdin.pause()
    
@@ -219,71 +279,34 @@ function scenario(count) {
                                  Promise.all(
                                      [createReactContainer(dir, compConvName, actionConvName, data)
                                      ,createReactAppComp(dir, compConvName)])          
-                                 .then(data => { count++; scenario(count); console.log(data[0]);    
-                                                 console.log(data[1])})
+                                 .then(data => { console.log(data[0])    
+                                                 console.log(data[1]) 
+                                                 count++; scenario(count); })
                                  .catch(error => { console.log(error[0]) ; console.log(error[1])})
                             })
                             .catch(error => { console.log(error) })
-            break;
+            break
+
+        case 5:
+            Promise.all([createServerApp(answer, dir, actionConvName),
+            createServerAction(dir, actionConvName)])
+                            .then(data => { count++; scenario(count) } )
+                            .catch(error => { console.log(error) })
+            break
         default:
-           return  
+           process.stdin.resume()
+           break  
      }
      });
  }
- scenario(1)
-/*
- gen = scenario(1)
- gen.next()
- gen.next()
-*/
 
-/*
- function askQuestions(question) {
-    rl.question(question, (answer) => {
-        createDir(answer)
-    });
-    
-}*/
-/*
-  var projectDir = createDir()
-  var actionConvName = createReactAction(projectDir)
-    createReactReducer(projectDir, actionConvName, 'Todo')*/
+ //console.log( '\x1b[31mHello world!' ) ;  
 
-/*
-var nodes = {
-  type: 'root',
-  value: [
-    { type: 'char', value: 'a' },
-    { type: 'char', value: 'b' },
-    { type: 'root', value: [
-        { type: 'char', value: 'c' },
-        { type: 'char', value: 'd' },
-        { type: 'char', value: 'e' },
-      ] 
-    },
-  ],
-}
+ console.log(colors.yellow(text))
+ 
+ scenario(1) 
+ 
 
-function * foreach (arr, fn) {
-  var i
-
-  for (i = 0; i < arr.length; i++) {
-    yield * fn(arr[i])
-  }
-}
-
-function * value (val) {
-  yield val
-}
-
-function * recursiveGenerator(node) {
-  yield * node.type === 'root' ?  foreach(node.value, recursiveGenerator) : value(node.value)
-}
-
-for (var generated of recursiveGenerator(nodes)) {
-  console.log(generated);
-}
-
-
-*/
-
+ process.on('SIGINT', function() {
+    process.exit();
+});

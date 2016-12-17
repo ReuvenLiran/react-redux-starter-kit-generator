@@ -1,15 +1,16 @@
 {
   "name": "generator",
   "version": "1.0.0",
-  "description": "genrator for react & redux",
+  "description": "GLLU React App",
   "main": "index.js",
+  "dependencies": {
+    "ncp": "^2.0.0",
+    "progress-stream": "^1.2.0"
+  },
+  "devDependencies": {},
   "scripts": {
     "start": "node index.js"
   },
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "ncp": "^2.0.0",
-    "progress-stream": "^1.2.0"
-  }
+  "license": "ISC"
 }
