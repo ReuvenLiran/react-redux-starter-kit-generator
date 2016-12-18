@@ -8,14 +8,14 @@ npm install && npm start
 ```
 And follow the instructions :)  
 
-You will be asked few questions:
-1. Name of project(directory)
-2. Name of action
-3. Name of component/container
-4. Name of reducer
-5. Mongodb URL
-
-The app copies starter-kit folder and changes its files' names and variables' names.
+You will be asked few questions:  
+1. Name of project(directory)  
+2. Name of action  
+3. Name of component/container  
+4. Name of reducer  
+5. Mongodb URL  
+  
+The app copies starter-kit folder and changes its files' names and variables' names.  
 
 index.js contains some scripts in setUpNPM function, you may choose another browser.  
 I have tested it on Linux 64bit.
