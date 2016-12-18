@@ -21,12 +21,11 @@ var projectDir;
 
 function setUpNPM(dir) {
           cp.spawnSync('npm', ['init'], {cwd: dir, stdio: 'inherit'})
+          cp.spawnSync('git', ['init'], {cwd: dir, stdio: 'inherit'}) 
           cp.spawnSync('npm', ['install'], {cwd: dir, stdio: 'inherit'}) 
-          cp.spawnSync('gnome-terminal', ['-x', 'sh', '-c' ,'npm run server; bash'], {cwd: dir, stdio: 'inherit'}) 
-          cp.spawnSync('gnome-terminal', ['-x', 'sh', '-c' ,'npm start; bash'], {cwd: dir, stdio: 'inherit'}) 
+          cp.spawn('npm', ['run', 'server'], {cwd: dir, stdio: 'inherit'}) 
+          cp.spawn('npm', ['start'], {cwd: dir, stdio: 'inherit'}) 
           cp.spawnSync('google-chrome', ['--app', 'http://localhost:8080'], {cwd: dir, stdio: 'inherit'}) 
-          //cp.spawnSync('npm', ['start'], {cwd: dir, stdio: 'inherit'}) 
-         // console.log(`Open a new session and run: cd ${dir} && npm run server`) 
 }
 
 function createDir(dir) {
@@ -304,9 +303,8 @@ function scenario(count) {
 
  console.log(colors.yellow(text))
  
- scenario(1) 
+scenario(1) 
  
-
  process.on('SIGINT', function() {
     process.exit();
 });
